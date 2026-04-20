@@ -1,6 +1,6 @@
 
 
-#########################################################################################################################################################################################
+#############################################################       ---------------- .MSG file Processing at Last ----------------      ########################################################################
 
 # import asyncio
 # from playwright.async_api import async_playwright
@@ -95,101 +95,33 @@
 
 #     return login_page
 
-# # ------------- CODE FOR ALL FILE TO DOWNLOAD FROM .MSG FILE ----------------
 
-# # def extract_attachments_from_msg(msg_path):
-# #     try:
-# #         msg = extract_msg.Message(msg_path)
-# #         msg.save()  # Optional: ensures proper parsing
+# # ------------- CODE FOR DOWNLOAD .MSG FILE AT LAST----------------
 
-# #         save_folder = os.path.dirname(msg_path)
-
-# #         for att in msg.attachments:
-# #             filename = att.longFilename or att.shortFilename
-
-# #             if not filename:
-# #                 continue  # Skip if no valid filename
-
-# #             file_path = os.path.join(save_folder, filename)
-
-# #             # Handle duplicate filenames
-# #             base, ext = os.path.splitext(file_path)
-# #             counter = 1
-# #             while os.path.exists(file_path):
-# #                 file_path = f"{base}_{counter}{ext}"
-# #                 counter += 1
-
-# #             # Save file
-# #             with open(file_path, "wb") as f:
-# #                 f.write(att.data)
-
-# #             print("Extracted:", file_path)
-
-# #     except Exception as e:
-# #         print("MSG Extraction Error:", e)
-
-# #-------------------------------------------------------------------------------------------
-  
-# # def extract_pdf_from_msg(msg_path):
-# #     try:
-# #         msg = extract_msg.Message(msg_path)
-# #         save_folder = os.path.dirname(msg_path)
-
-# #         for att in msg.attachments:
-# #             filename = att.longFilename or att.shortFilename
-
-# #             # Extract only Quote.pdf (if you want exact match)
-# #             if filename and filename.lower() == "quote.pdf":
-
-# #                 pdf_path = os.path.join(save_folder, filename)
-
-# #                 with open(pdf_path, "wb") as f:
-# #                     f.write(att.data)
-
-# #                 print("Extracted:", pdf_path)
-
-# #     except Exception as e:
-# #         print("MSG Extraction Error:", e)
-
-# #--------------------------------------------It Works if .msg file in last-----------------------------------------------------------------
-# import os
-# import extract_msg
-
-# def extract_pdf_from_msg(msg_path):
+# def extract_pdf_from_msg(msg_path, existing_types):
 #     try:
 #         msg = extract_msg.Message(msg_path)
 #         save_folder = os.path.dirname(msg_path)
 
 #         target_keywords = [
-#             "quote",
-#             "binder",
-#             "proposal",
-#             "schedule",
-#             "application",
-#             "app",
-#             "accord"
+#             "quote", "binder", "proposal",
+#             "schedule", "application", "app", "accord"
 #         ]
-
-#         # Get existing files in folder
-#         existing_files = [f.lower() for f in os.listdir(save_folder)]
 
 #         for att in msg.attachments:
 #             filename = att.longFilename or att.shortFilename
-
 #             if not filename:
 #                 continue
 
 #             filename_lower = filename.lower()
 
 #             if filename_lower.endswith(".pdf"):
-                
+
 #                 matched_keyword = next((k for k in target_keywords if k in filename_lower), None)
 
 #                 if matched_keyword:
-                    
-#                     # 🔥 Check if ANY existing file already has this keyword
-#                     if any(matched_keyword in f for f in existing_files):
-#                         print(f"Skipping (already have {matched_keyword}):", filename)
+#                     if matched_keyword in existing_types:
+#                         print(f"Skipping INNER {matched_keyword}:", filename)
 #                         continue
 
 #                     pdf_path = os.path.join(save_folder, filename)
@@ -197,12 +129,14 @@
 #                     with open(pdf_path, "wb") as f:
 #                         f.write(att.data)
 
-#                     print("Extracted:", pdf_path)
+#                     print("Saved INNER:", pdf_path)
+
+#                     existing_types.add(matched_keyword)
 
 #     except Exception as e:
 #         print("MSG Extraction Error:", e)
 
-
+        
 # # SCRAPER FUNCTION
 
 # async def scrape_records(page, start_id):
@@ -214,7 +148,7 @@
 #     await page.locator('[data-automation-id="tpgActivitiesDisplayTab"]').click()
 #     await page.get_by_text("Selected date range").click()
 
-#     yesterday = datetime.now() - timedelta(days=1)
+#     yesterday = datetime.now() - timedelta(days=2)
 #     yesterday_str = f"{yesterday.month}/{yesterday.day}/{yesterday.year}"
 
 #     print("Yesterday:", yesterday_str)
@@ -242,15 +176,6 @@
 
 #         data_visible = f"/html/body/root/app/program/div/div[2]/div[2]/div/div/screen/div/div/div/proxy[3]/div/asi-panel/div/proxy[3]/div/asi-frame/div/div[2]/proxy/div/asi-frame/div/div[2]/proxy[3]/div/asi-virtual-list-view/div/div/asi-virtual-list-table/div/div/div[2]/div[2]/div/div[{row}]/div[4]/div/span"
 #         locator = page.locator(f"xpath={data_visible}")
-
-#         # if await locator.count() == 0:
-#         #     print("No more rows found")
-#         #     await page.get_by_text("Logout").click()
-#         #     #await page.locator('div.main-button:has-text("Logout")').click()
-#         #     await page.locator("[data-automation-id='Yes']").click()
-#         #     await page.wait_for_timeout(3000)
-#         #     print("No more rows, Logout successful")
-#         #     return data_list
 
 #         try:
 #             await locator.wait_for(state="visible", timeout=5000)
@@ -361,17 +286,8 @@
 #                 account_manager_value = await account_manager.input_value()
 #                 print("Account Manager:", account_manager_value)
 
-
 #                 await page.locator("//span[normalize-space()='Activities']").click(timeout=5000)
 #                 print("Activities clicked")
-
-#                 # activities = page.locator("//span[normalize-space()='Activities']")
-#                 # await activities.scroll_into_view_if_needed()
-#                 # await activities.wait_for(state="visible", timeout=5000)
-#                 # await activities.click()
-#                 # # await page.locator("//span[text()='Activities']").click()
-#                 # # await page.locator("text=Activities").click()        # Best Option
-#                 # print("Activities clicked")
 
 #                 access = page.locator("div.main-button", has_text="Access")
 #                 await access.wait_for()
@@ -426,9 +342,6 @@
 
 #                             print("Saved:", save_path)
 
-#                             if save_path.lower().endswith(".msg"):
-#                                 extract_pdf_from_msg(save_path)
-
 #                             await page.wait_for_timeout(3000)
 
 #                             break
@@ -437,6 +350,34 @@
 #                             retry += 1
 #                             print(f"Error at row {i+1} retry {retry}: {e}")
 #                             await page.wait_for_timeout(3000)
+
+
+#                 # =========================
+#                 # FINAL STEP: Process MSG after ALL downloads
+#                 # =========================
+
+#                 target_keywords = [
+#                     "quote", "binder", "proposal",
+#                     "schedule", "application", "app", "accord"
+#                 ]
+
+#                 existing_types = set()
+
+#                 # Detect OUTER PDFs
+#                 for f in os.listdir(task_folder):
+#                     f_lower = f.lower()
+#                     if f_lower.endswith(".pdf"):
+#                         for k in target_keywords:
+#                             if k in f_lower:
+#                                 existing_types.add(k)
+
+#                 print("Existing OUTER types:", existing_types)
+
+#                 # Process MSG files AFTER
+#                 for f in os.listdir(task_folder):
+#                     if f.lower().endswith(".msg"):
+#                         msg_path = os.path.join(task_folder, f)
+#                         extract_pdf_from_msg(msg_path, existing_types)
 
 
 #                 data_list.append({
@@ -533,47 +474,6 @@
 
 # # MAIN FUNCTION
 
-# # async def run_epic():
-
-# #     start_id = get_starting_ref_id()
-    
-# #     async with async_playwright() as p:
-
-# #         browser = await p.chromium.launch(channel="chrome", headless=False)
-# #         context = await browser.new_context()
-# #         page = await context.new_page()
-
-# #         page.set_default_timeout(30000)
-
-# #         try:
-# #             await login(page, context)
-# #             data_list = await scrape_records(page, start_id)
-# #             save_to_excel(data_list)
-
-# #         finally:
-# #             print("Attempting Logout...")
-
-# #             try:
-# #                 await page.get_by_text("Logout").click(timeout=5000)
-# #                 await page.locator("[data-automation-id='Yes']").click(timeout=5000)
-# #                 await page.wait_for_timeout(3000)
-# #                 print("Logout successful")
-# #             except Exception as e:
-# #                 print("Logout failed or already logged out:", e)
-
-# #         await context.close()
-# #         await browser.close()
-
-# #         #await page.pause()
-
-
-# # if __name__ == "__main__":
-# #     asyncio.run(run_epic())
-
-
-
-# # MAIN FUNCTION
-
 # async def run_epic():
 
 #     start_id = get_starting_ref_id()
@@ -617,7 +517,13 @@
 #     asyncio.run(run_epic())
 
 
-#############################################################       ---------------- .MSG file Processing at Last ----------------      ########################################################################
+
+
+
+#-------------------------------------------------------Testing to Save data row by row in Excel instead of list and then saving at last----------------------------
+
+
+
 
 import asyncio
 from playwright.async_api import async_playwright
@@ -712,115 +618,8 @@ async def login(page, context):
 
     return login_page
 
-# ------------- CODE FOR ALL FILE TO DOWNLOAD FROM .MSG FILE ----------------
 
-# def extract_attachments_from_msg(msg_path):
-#     try:
-#         msg = extract_msg.Message(msg_path)
-#         msg.save()  # Optional: ensures proper parsing
-
-#         save_folder = os.path.dirname(msg_path)
-
-#         for att in msg.attachments:
-#             filename = att.longFilename or att.shortFilename
-
-#             if not filename:
-#                 continue  # Skip if no valid filename
-
-#             file_path = os.path.join(save_folder, filename)
-
-#             # Handle duplicate filenames
-#             base, ext = os.path.splitext(file_path)
-#             counter = 1
-#             while os.path.exists(file_path):
-#                 file_path = f"{base}_{counter}{ext}"
-#                 counter += 1
-
-#             # Save file
-#             with open(file_path, "wb") as f:
-#                 f.write(att.data)
-
-#             print("Extracted:", file_path)
-
-#     except Exception as e:
-#         print("MSG Extraction Error:", e)
-
-#-------------------------------------------------------------------------------------------
-  
-# def extract_pdf_from_msg(msg_path):
-#     try:
-#         msg = extract_msg.Message(msg_path)
-#         save_folder = os.path.dirname(msg_path)
-
-#         for att in msg.attachments:
-#             filename = att.longFilename or att.shortFilename
-
-#             # Extract only Quote.pdf (if you want exact match)
-#             if filename and filename.lower() == "quote.pdf":
-
-#                 pdf_path = os.path.join(save_folder, filename)
-
-#                 with open(pdf_path, "wb") as f:
-#                     f.write(att.data)
-
-#                 print("Extracted:", pdf_path)
-
-#     except Exception as e:
-#         print("MSG Extraction Error:", e)
-
-#--------------------------------------------It Works if .msg file in last-----------------------------------------------------------------
-# import os
-# import extract_msg
-
-# def extract_pdf_from_msg(msg_path):
-#     try:
-#         msg = extract_msg.Message(msg_path)
-#         save_folder = os.path.dirname(msg_path)
-
-#         target_keywords = [
-#             "quote",
-#             "binder",
-#             "proposal",
-#             "schedule",
-#             "application",
-#             "app",
-#             "accord"
-#         ]
-
-#         # Get existing files in folder
-#         existing_files = [f.lower() for f in os.listdir(save_folder)]
-
-#         for att in msg.attachments:
-#             filename = att.longFilename or att.shortFilename
-
-#             if not filename:
-#                 continue
-
-#             filename_lower = filename.lower()
-
-#             if filename_lower.endswith(".pdf"):
-                
-#                 matched_keyword = next((k for k in target_keywords if k in filename_lower), None)
-
-#                 if matched_keyword:
-                    
-#                     # 🔥 Check if ANY existing file already has this keyword
-#                     if any(matched_keyword in f for f in existing_files):
-#                         print(f"Skipping (already have {matched_keyword}):", filename)
-#                         continue
-
-#                     pdf_path = os.path.join(save_folder, filename)
-
-#                     with open(pdf_path, "wb") as f:
-#                         f.write(att.data)
-
-#                     print("Extracted:", pdf_path)
-
-#     except Exception as e:
-#         print("MSG Extraction Error:", e)
-
-#------------------------------------------------------------------------------------------
-
+# ------------- CODE FOR DOWNLOAD .MSG FILE AT LAST----------------
 
 def extract_pdf_from_msg(msg_path, existing_types):
     try:
@@ -863,7 +662,7 @@ def extract_pdf_from_msg(msg_path, existing_types):
         
 # SCRAPER FUNCTION
 
-async def scrape_records(page, start_id):
+async def scrape_records(page, start_id, existing_ids):
 
     locator = page.get_by_text("Follow Up/Start")
     await locator.wait_for(state="visible", timeout=20000)
@@ -872,7 +671,7 @@ async def scrape_records(page, start_id):
     await page.locator('[data-automation-id="tpgActivitiesDisplayTab"]').click()
     await page.get_by_text("Selected date range").click()
 
-    yesterday = datetime.now() - timedelta(days=2)
+    yesterday = datetime.now() - timedelta(days=1)
     yesterday_str = f"{yesterday.month}/{yesterday.day}/{yesterday.year}"
 
     print("Yesterday:", yesterday_str)
@@ -890,7 +689,6 @@ async def scrape_records(page, start_id):
     locator = page.get_by_text("Follow Up/Start")
     await locator.wait_for(state="visible", timeout=20000)
 
-    data_list = []
     row = 1
     current_id = start_id
 
@@ -900,15 +698,6 @@ async def scrape_records(page, start_id):
 
         data_visible = f"/html/body/root/app/program/div/div[2]/div[2]/div/div/screen/div/div/div/proxy[3]/div/asi-panel/div/proxy[3]/div/asi-frame/div/div[2]/proxy/div/asi-frame/div/div[2]/proxy[3]/div/asi-virtual-list-view/div/div/asi-virtual-list-table/div/div/div[2]/div[2]/div/div[{row}]/div[4]/div/span"
         locator = page.locator(f"xpath={data_visible}")
-
-        # if await locator.count() == 0:
-        #     print("No more rows found")
-        #     await page.get_by_text("Logout").click()
-        #     #await page.locator('div.main-button:has-text("Logout")').click()
-        #     await page.locator("[data-automation-id='Yes']").click()
-        #     await page.wait_for_timeout(3000)
-        #     print("No more rows, Logout successful")
-        #     return data_list
 
         try:
             await locator.wait_for(state="visible", timeout=5000)
@@ -920,7 +709,7 @@ async def scrape_records(page, start_id):
 
             if await locator.count() == 0:
                 print("Confirmed end of rows")
-                return data_list
+                return
             else:
                 print("Row loaded after scroll, continuing...")
         
@@ -1019,11 +808,6 @@ async def scrape_records(page, start_id):
                 account_manager_value = await account_manager.input_value()
                 print("Account Manager:", account_manager_value)
 
-                # await page.locator("//span[normalize-space()='Activities']").click()
-                # # await page.locator("//span[text()='Activities']").click()
-                # # await page.locator("text=Activities").click()        # Best Option
-                # print("Activities clicked")
-
                 await page.locator("//span[normalize-space()='Activities']").click(timeout=5000)
                 print("Activities clicked")
 
@@ -1080,9 +864,6 @@ async def scrape_records(page, start_id):
 
                             print("Saved:", save_path)
 
-                            # if save_path.lower().endswith(".msg"):
-                            #     extract_pdf_from_msg(save_path)
-
                             await page.wait_for_timeout(3000)
 
                             break
@@ -1112,16 +893,25 @@ async def scrape_records(page, start_id):
                             if k in f_lower:
                                 existing_types.add(k)
 
-                print("Existing OUTER types:", existing_types)
+                # print("Existing OUTER types:", existing_types)
 
-                # Process MSG files AFTER
-                for f in os.listdir(task_folder):
-                    if f.lower().endswith(".msg"):
+                # # Process MSG files AFTER
+                # for f in os.listdir(task_folder):
+                #     if f.lower().endswith(".msg"):
+                #         msg_path = os.path.join(task_folder, f)
+                #         extract_pdf_from_msg(msg_path, existing_types)
+
+                msg_files = [f for f in os.listdir(task_folder) if f.lower().endswith(".msg")]
+
+                if msg_files:
+                    print("Existing OUTER types:", existing_types)
+
+                    for f in msg_files:
                         msg_path = os.path.join(task_folder, f)
                         extract_pdf_from_msg(msg_path, existing_types)
 
 
-                data_list.append({
+                row_data = {
                     "Date": date_text,
                     "Account Manager": account_manager_value,
                     "Lookup Code": lookup_code_value,
@@ -1130,10 +920,12 @@ async def scrape_records(page, start_id):
                     "Policy number": policy_no,
                     "LOB": lob,
                     "Association": association_value,
-                    "Reference ID": ref_id,
                     "Job ID": "",
-                    "Status": "Pending"
-                })
+                    "Status": "Pending",
+                    "Reference ID": ref_id
+                }
+
+                append_to_excel(row_data, existing_ids)
 
 
                 await page.locator("div.close-button").wait_for(state="visible")
@@ -1166,7 +958,7 @@ async def scrape_records(page, start_id):
                     if retry >= MAX_RETRIES:
                         print(f"Skipping row {row} after {MAX_RETRIES} retries")
 
-                        data_list.append({
+                        error_data = {
                             "Date": date_text,
                             "Account Manager": "",
                             "Lookup Code": "",
@@ -1175,83 +967,58 @@ async def scrape_records(page, start_id):
                             "Policy number": "",
                             "LOB": "",
                             "Association": "",
-                            "Reference ID": ref_id,
                             "Job ID": "",
-                            "Status": "Error"
-                        })
+                            "Status": "Error",
+                            "Reference ID": ref_id
+                        }
 
+                        append_to_excel(error_data, existing_ids)
                         break
 
         row += 1
 
-    return data_list
-
 
 # SAVE TO EXCEL FUNCTION
 
-def save_to_excel(data_list):
+def append_to_excel(row_data, existing_ids):
 
-    new_df = pd.DataFrame(data_list)
+    row_data["Reference ID"] = str(row_data["Reference ID"])
 
-    if os.path.exists(EXCEL_FILE_PATH):
-        old_df = pd.read_excel(EXCEL_FILE_PATH)
-        final_df = pd.concat([old_df, new_df], ignore_index=True)
-    else:
-        final_df = new_df
-    
-    final_df["Policy number"] = final_df["Policy number"].astype(str)
-    
-    with pd.ExcelWriter(EXCEL_FILE_PATH, engine="openpyxl") as writer:
-        final_df.to_excel(writer, index=False, sheet_name="Sheet1")
+    if row_data["Reference ID"] in existing_ids:
+        print("Duplicate skipped:", row_data["Reference ID"])
+        return False
 
-        worksheet = writer.sheets["Sheet1"]
+    existing_ids.add(row_data["Reference ID"])
 
-        for i, col in enumerate(final_df.columns, 1):
-            max_len = max(final_df[col].astype(str).map(len).max(), len(col)) + 2
-            worksheet.column_dimensions[get_column_letter(i)].width = max_len
-    
-    print("Excel Saved Successfully")
+    df = pd.DataFrame([row_data])
 
+    if not os.path.exists(EXCEL_FILE_PATH):
+        df.to_excel(EXCEL_FILE_PATH, index=False)
+        print(f"Saved → {row_data['Reference ID']}")
+        return True
 
-# MAIN FUNCTION
+    from openpyxl import load_workbook
+    book = load_workbook(EXCEL_FILE_PATH)
+    sheet = book.active
+    startrow = sheet.max_row
+    book.close()
 
-# async def run_epic():
+    with pd.ExcelWriter(
+        EXCEL_FILE_PATH,
+        engine="openpyxl",
+        mode="a",
+        if_sheet_exists="overlay"
+    ) as writer:
 
-#     start_id = get_starting_ref_id()
-    
-#     async with async_playwright() as p:
+        df.to_excel(
+            writer,
+            index=False,
+            header=False,
+            startrow=startrow
+        )
 
-#         browser = await p.chromium.launch(channel="chrome", headless=False)
-#         context = await browser.new_context()
-#         page = await context.new_page()
-
-#         page.set_default_timeout(30000)
-
-#         try:
-#             await login(page, context)
-#             data_list = await scrape_records(page, start_id)
-#             save_to_excel(data_list)
-
-#         finally:
-#             print("Attempting Logout...")
-
-#             try:
-#                 await page.get_by_text("Logout").click(timeout=5000)
-#                 await page.locator("[data-automation-id='Yes']").click(timeout=5000)
-#                 await page.wait_for_timeout(3000)
-#                 print("Logout successful")
-#             except Exception as e:
-#                 print("Logout failed or already logged out:", e)
-
-#         await context.close()
-#         await browser.close()
-
-#         #await page.pause()
-
-
-# if __name__ == "__main__":
-#     asyncio.run(run_epic())
-
+    print(f"Saved → {row_data['Reference ID']}")
+    return True
 
 
 # MAIN FUNCTION
@@ -1259,6 +1026,12 @@ def save_to_excel(data_list):
 async def run_epic():
 
     start_id = get_starting_ref_id()
+
+    existing_ids = set()
+
+    if os.path.exists(EXCEL_FILE_PATH):
+        df = pd.read_excel(EXCEL_FILE_PATH)
+        existing_ids = set(df["Reference ID"].astype(str))
 
     browser = None
     context = None
@@ -1274,8 +1047,7 @@ async def run_epic():
             page.set_default_timeout(30000)
 
             await login(page, context)
-            data_list = await scrape_records(page, start_id)
-            save_to_excel(data_list)
+            await scrape_records(page, start_id, existing_ids)
 
         finally:
             print("Cleaning EPIC resources...")
