@@ -262,8 +262,28 @@ def generate_daily_report():
         (df["Last Updated"] < tomorrow)
     ].copy()
 
+    # if filtered.empty:
+    #     raise Exception(f"No jobs found for today: {today_date}")
+    
+    
     if filtered.empty:
-        raise Exception(f"No jobs found for today: {today_date}")
+        df_valid_dates = df["Last Updated"].dropna()
+
+        if df_valid_dates.empty:
+            date_str = "No Data"
+        else:
+            date_str = df_valid_dates.max().strftime("%Y-%m-%d")
+
+        report_summary = f"""\
+    Today Job Report Status
+
+    Date: {date_str}
+
+    No jobs found.
+    """
+        print(report_summary)
+
+        return report_summary, None
 
     filtered = filtered.sort_values(by="Reference ID")
 
